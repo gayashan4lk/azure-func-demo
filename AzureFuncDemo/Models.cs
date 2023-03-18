@@ -14,4 +14,11 @@ namespace AzureFuncDemo
     {
         public string TaskDescription { get; set; }
     }
+
+    public class TodoUpdateModel
+    {
+        public string Id { get; set; }
+        public string TaskDescription { get; set;}
+        public bool IsCompleted { get; set; }
+    }
 }

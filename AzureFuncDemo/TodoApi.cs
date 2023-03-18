@@ -25,9 +25,9 @@ namespace AzureFuncDemo
             
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
-            dynamic input = JsonConvert.DeserializeObject<TodoCreateModel>(requestBody);
+            dynamic create = JsonConvert.DeserializeObject<TodoCreateModel>(requestBody);
 
-            var todo = new Todo() { TaskDescription = input.TaskDescription };
+            var todo = new Todo() { TaskDescription = create.TaskDescription };
 
             todoList.Add(todo);
 
@@ -61,28 +61,50 @@ namespace AzureFuncDemo
             return new OkObjectResult(todoItem);
         }
 
-        /*[FunctionName("UpdateTodoItem")]
-        public async Task<IActionResult> UpdateTodoItem(
-            [HttpTrigger(AuthorizationLevel.Anonymous,  "put", Route = "todo/{id")] HttpRequest req,
-            ILogger log)
+        [FunctionName("UpdateTodo")]
+        public static async Task<IActionResult> UpdateTodo(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "put", Route = "todo/{id}")] HttpRequest req,
+            ILogger log, string id)
         {
             log.LogInformation("Update a todo item.");
 
+            var todoItem = todoList.FirstOrDefault(x => x.Id == id);
+
+            if (todoItem == null)
+            {
+                return new NotFoundResult();
+            }
+
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            
-            dynamic data = JsonConvert.DeserializeObject<TodoUpdateModel>(requestBody);
+            dynamic update = JsonConvert.DeserializeObject<TodoUpdateModel>(requestBody);
 
-            var todoItem = todoList.FirstOrDefault(x=>x.Id == data.Id);
+            todoItem.IsCompleted = update.IsCompleted;
+            if (!string.IsNullOrEmpty(update.TaskDescription))
+            {
+                todoItem.TaskDescription = update.TaskDescription;
+            }
 
-            //todoList.;
+            return new OkObjectResult(todoItem);
+        }
 
-            todoItem.TaskDescription = data.TaskDescription;
-            todoItem.IsCompleted = data.IsCompleted;
+        [FunctionName("DeleteTodo")]
+        public static async Task<IActionResult> Run(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "delete", Route = "todo/{id}")] HttpRequest req,
+            ILogger log, string id)
+        {
+            log.LogInformation("Delete a todo item.");
 
-            //todoList.Add(todoItem);
+            var todoItem = todoList.FirstOrDefault(x => x.Id == id);
 
-            return new OkObjectResult("done");
-        }*/
+            if (todoItem == null)
+            {
+                return new NotFoundResult();
+            }
+
+            todoList.Remove(todoItem);
+
+            return new OkResult();
+        }
 
     }
 }
